@@ -1,18 +1,21 @@
 from sqlalchemy.orm import Session
 
-from app.database.database import SessionLocal
-from app.models.user import User
+# Added engine and Base to create tables
+from app.database.database import SessionLocal, engine
+from app.database.base import Base
+from app.models import User, Delivery, Payment 
+
 from app.core.config import settings
 from app.core.enums import UserRole
 from app.auth.security import hash_password
 
-
 def create_owner():
+    # --- NEW: This line creates all your tables in Neon ---
+    Base.metadata.create_all(bind=engine)
 
     db: Session = SessionLocal()
 
     try:
-
         existing_owner = (
             db.query(User)
             .filter(User.role == UserRole.OWNER)
@@ -36,17 +39,12 @@ def create_owner():
         )
 
         db.add(owner)
-
         db.commit()
-
         db.refresh(owner)
-
         print("Owner created successfully!")
 
     finally:
-
         db.close()
-
 
 if __name__ == "__main__":
     create_owner()
